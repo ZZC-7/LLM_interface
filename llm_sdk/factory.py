@@ -12,15 +12,15 @@ class LLMFactory:
             api_key: str = "EMPTY",
             base_url: Optional[str] = None,
             temperature: float = 0.7,
-            streaming: bool = False,
+            streaming: bool = True,
             **kwargs
     ) -> ChatOpenAI:
         """
         创建一个通用的 ChatOpenAI 实例
         :param model_name: 模型名称 (如 'qwen2:1.5b', 'gpt-4')
-        :param api_key: API 密钥 (本地模型随便填)
+        :param api_key: API 密钥 (本地模型使用缺省值 )
         :param base_url: API 接口地址
-        :param temperature: 温度参数 (0-2)
+        :param temperature: 温度参数 (0-2) 控制模型创造性
         :param streaming: 是否启用流式输出
         """
         return ChatOpenAI(
