@@ -1,17 +1,17 @@
 # LLM Agent 开发项目
 
-本项目基于 LangChain 封装的通用 LLM 调用接口，支持本地模型（Ollama）与云端模型（DeepSeek/OpenAI）调用，集成了具备**RAG**（本地知识库检索）和联网搜索能力的智能教师 Agent。
+本项目基于 LangChain 封装的通用 LLM 调用接口，支持本地模型（Ollama）与云端模型（DeepSeek/OpenAI）调用，集成了具备**RAG**（本地知识库检索）和**联网搜索**能力的智能教师 Agent。
 
 ---
 
 ## 核心功能
 
-- 多供应商支持：统一接口调用 Ollama 本地模型及所有兼容 OpenAI 协议的云端 API
-- 交互式模型选择：interface_test.py 支持用户选择本地或云端模型进行交互
+- 多供应商支持：通用接口调用 Ollama 本地模型及所有兼容 OpenAI 协议的云端 API
+- 模型接口测试：interface_test.py 支持用户选择本地或云端模型进行对话交互来测试接口
 - RAG 本地知识库：基于 FAISS 向量数据库构建本地知识库，支持 PDF 和 TXT 文档检索
 - 智能教师 Agent：集成 Tavily Search，优先查阅本地知识库，自动联网补充信息
-- 上下文记忆：自动总结历史对话，维持长期对话连贯性
-- 实时状态显示：流式输出答案，实时显示"查阅本地文档"或"联网搜索"状态
+- 上下文记忆：自动调用llm总结历史对话，维持长期对话连贯性
+- 舒适交互体验：模型回答流式输出，实时显示工具调用状态
 
 ---
 
@@ -19,16 +19,16 @@
 
 ```
 .
-├── llm_sdk/                    # LLM 调用接口（工厂模式）
+├── llm_sdk/                    # LLM 调用接口
 ├── interface_test.py           # 模型对话测试脚本
-├── teacher_agent.py            # 教师 Agent（集成知识库+搜索）
+├── teacher_agent.py            # 教师 Agent（集成知识库+联网搜索）
 ├── rag_service.py              # 本地知识库管理
-├── my_knowledge/               # 教学资料库（用户放入文档）
+├── my_knowledge/               # 本地知识库（用户需存入pdf/txt文档）
 ├── faiss_index/                # FAISS 向量索引（自动生成）
-├── .env                        # 环境配置（用户创建）
+├── .env                        # 环境配置（用户创建并填写API）
 ├── .gitignore                  # Git 忽略配置
 ├── requirements.txt            # 依赖包列表
-└── README.md                   # 项目文档
+└── README.md                   # 项目说明文档
 ```
 
 ---
@@ -203,16 +203,7 @@ rm -rf faiss_index/
 python teacher_agent.py
 ```
 
-### Q3: 依赖安装冲突
-
-解决方案：清理缓存后重新安装
-
-```bash
-pip cache purge
-pip install -r requirements.txt --use-deprecated=legacy-resolver
-```
-
-### Q4: 下载 Hugging Face 模型缓慢
+### Q3: 下载 Hugging Face 模型缓慢
 
 问题：首次启动时下载 sentence-transformers 模型较慢。
 
@@ -239,11 +230,11 @@ Linux 或 Mac：
 export HF_TOKEN=your_token_here
 ```
 
-### Q5: 教师 Agent 无法调用工具
+### Q4: 教师 Agent 无法调用工具
 
-原因：使用了过小的模型，无法理解工具调用逻辑。
+原因：使用了过小的本地模型，无法理解工具调用逻辑。
 
-解决方案：使用更大的模型（至少 7B）。1.5B 模型可能无法正确理解工具调用。
+解决方案：使用更大的本地模型或云端模型，1.5B 模型可能无法正确理解工具调用。
 
 ---
 
@@ -268,7 +259,7 @@ export HF_TOKEN=your_token_here
 
 ## 使用示例
 
-### 示例一：基本对话
+### 示例一：模型对话
 
 ```bash
 python interface_test.py
@@ -283,7 +274,7 @@ python teacher_agent.py
 ```
 
 输入：Python 中的装饰器是什么?
-系统会实时检索本地知识库和互联网资料，流式输出答案。
+系统会实时检索本地知识库（如有）和互联网资料，流式输出答案。
 
 ### 示例三：添加自己的知识库
 
@@ -303,42 +294,11 @@ my_knowledge/
 
 ---
 
-## 验证安装
-
-安装完成后验证依赖：
-
-```bash
-pip check
-```
-
-或运行简单测试：
-
-```bash
-python -c "
-import langchain
-import openai
-import faiss
-import sentence_transformers
-import tavily
-print('All dependencies installed successfully!')
-"
-```
-
----
-
 ## 进阶配置
-
-### 使用 GPU 加速（可选）
-
-替换 requirements.txt 中的 PyTorch：
-
-```bash
-pip install torch --index-url https://download.pytorch.org/whl/cu121
-```
 
 ### 自定义 Agent 提示词
 
-编辑 teacher_agent.py 中的 ChatPromptTemplate 系统提示词。
+编辑 teacher_agent.py 中的 ChatPromptTemplate 系统提示词，定义模型身份。
 
 ### 调整文档切分参数
 
